@@ -1,10 +1,12 @@
 import Navbar from "./components/Navbar";
-
 import HomePage from "./pages/HomePage";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
+import ForgotPasswordPage from './pages/ForgetPassword';
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import EmailVerificationPage from "./pages/EmailVerifyPage";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore";
@@ -39,10 +41,14 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : !authUser.isVerified ? <Navigate to="/verify-email" />: <Navigate to="/" />} />
+        <Route path='/verify-email' element={<EmailVerificationPage />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path='/forgot-password' element={<ForgotPasswordPage />}/>
+        <Route path='/reset-password/:token' element={<ResetPasswordPage />}/>
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+        <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
 
       <Toaster />

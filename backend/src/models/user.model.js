@@ -16,6 +16,18 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    lastLogin: {
+			type: Date,
+			default: Date.now,
+		},
+		isVerified: {
+			type: Boolean,
+			default: false,
+		},
+		resetPasswordToken: String,
+		resetPasswordExpiresAt: Date,
+		verificationToken: String,
+		verificationTokenExpiresAt: Date,
     profilePic: {
       type: String,
       default: "",

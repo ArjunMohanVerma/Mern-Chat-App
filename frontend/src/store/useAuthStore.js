@@ -11,6 +11,9 @@ export const useAuthStore = create((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
+  isLoading: false,
+  error:null,
+  message: null,
   onlineUsers: [],
   socket: null,
 
@@ -68,6 +71,46 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  verifyEmail: async (code) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.post(`/auth/verify-email`, { code });
+			set({ user: response.data.user, isAuthenticated: true, isLoading: false });
+			return response.data;
+		} catch (error) {
+			set({ error: error.response.data.message || "Error verifying email", isLoading: false });
+			throw error;
+		}
+	},
+
+  forgotPassword: async (email) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.post("/auth/forgot-password", { email });
+			set({ message: response.data.message, isLoading: false });
+		} catch (error) {
+			set({
+				isLoading: false,
+				error: error.response.data.message || "Error sending reset password email",
+			});
+			throw error;
+		}
+	},
+
+	resetPassword: async (token, password) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.post(`/auth/reset-password/${token}`, { password });
+			set({ message: response.data.message, isLoading: false });
+		} catch (error) {
+			set({
+				isLoading: false,
+				error: error.response.data.message || "Error resetting password",
+			});
+			throw error;
+		}
+	},
+
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
@@ -99,6 +142,7 @@ export const useAuthStore = create((set, get) => ({
       set({ onlineUsers: userIds });
     });
   },
+  
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
   },

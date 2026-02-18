@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,10 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!formData.email || !formData.password){
+      toast.error("All fields are required");
+      return;
+    }
     login(formData);
   };
 
@@ -84,6 +89,15 @@ const LoginPage = () => {
                 </button>
               </div>
             </div>
+              
+              <div className="text-center">
+            <p className="text-base-content/60">
+              Forget Password?{" "}
+              <Link to="/forgot-password" className="link link-primary">
+                Reset Password
+              </Link>
+            </p>
+          </div>
 
             <button type="submit" className="btn btn-primary w-full" disabled={isLoggingIn}>
               {isLoggingIn ? (
@@ -95,6 +109,7 @@ const LoginPage = () => {
                 "Sign in"
               )}
             </button>
+            
           </form>
 
           <div className="text-center">
@@ -105,6 +120,7 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
+          
         </div>
       </div>
 

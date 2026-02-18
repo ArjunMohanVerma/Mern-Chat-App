@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
@@ -13,6 +13,8 @@ const SignUpPage = () => {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
+
 
   const { signup, isSigningUp } = useAuthStore();
 
@@ -26,12 +28,22 @@ const SignUpPage = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const success = validateForm();
 
-    if (success === true) signup(formData);
+    if (success === true){
+      // signup(formData);
+
+      try {
+			await signup(formData);
+      // console.log(email, password, fullName);
+			navigate("/verify-email");
+		} catch (error) {
+			console.log(error);
+		}
+    }
   };
 
   return (
