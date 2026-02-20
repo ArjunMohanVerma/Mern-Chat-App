@@ -40,7 +40,7 @@ const App = () => {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
+        <Route path="/" element={authUser ? authUser.isVerified ? <HomePage /> : <Navigate to="/verify-email" />: <Navigate to="/login" />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : !authUser.isVerified ? <Navigate to="/verify-email" />: <Navigate to="/" />} />
         <Route path='/verify-email' element={<EmailVerificationPage />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />

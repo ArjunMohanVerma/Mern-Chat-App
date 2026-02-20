@@ -29,3 +29,10 @@ export const protectRoute = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const requireVerifiedUser = (req, res, next) => {
+  if (!req.user.isVerified) {
+    return res.status(403).json({ message: "Email not verified" });
+  }
+  next();
+};

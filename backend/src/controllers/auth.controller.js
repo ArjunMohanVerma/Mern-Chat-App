@@ -102,6 +102,7 @@ export const verifyEmail = async (req, res) => {
       user: {
         ...user._doc,
         password: undefined,
+        isVerified: user.isVerified,
       },
     });
   } catch (error) {
@@ -123,6 +124,11 @@ export const login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
+    // check if user is verified or not
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Please verify your email before logging in" });
+    }
+
 
     generateToken(user._id, res);
 
@@ -246,6 +252,10 @@ export const updateProfile = async (req, res) => {
 
 export const checkAuth = (req, res) => {
   try {
+    if (!req.user.isVerified) {
+      return res.status(403).json({ message: "Email not verified", user: req.user });
+    }
+
     res.status(200).json(req.user);
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
