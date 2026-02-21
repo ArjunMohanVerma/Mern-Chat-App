@@ -137,6 +137,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      isVerified: user.isVerified,
     });
   } catch (error) {
     console.log("Error in login controller", error.message);
@@ -251,14 +252,12 @@ export const updateProfile = async (req, res) => {
 };
 
 export const checkAuth = (req, res) => {
-  try {
-    if (!req.user.isVerified) {
-      return res.status(403).json({ message: "Email not verified", user: req.user });
-    }
-
+   try {
+    // Always return the user object
     res.status(200).json(req.user);
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
+
 };
