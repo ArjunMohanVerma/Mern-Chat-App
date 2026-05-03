@@ -9,6 +9,7 @@ export const useChatStore = create((set, get) => ({
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isTyping: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -46,8 +47,9 @@ export const useChatStore = create((set, get) => ({
   subscribeToMessages: () => {
     const { selectedUser } = get();
     if (!selectedUser) return;
-
+    
     const socket = useAuthStore.getState().socket;
+     socket.off("newMessage");//-----
 
     socket.on("newMessage", (newMessage) => {
       const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
@@ -64,5 +66,41 @@ export const useChatStore = create((set, get) => ({
     socket.off("newMessage");
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+
+    subscribeToTyping: () => {
+    const socket = useAuthStore.getState().socket;
+    const { selectedUser } = get();
+
+    if (!socket || !selectedUser) return;
+
+    // ✅ prevent duplicate listeners
+    socket.off("typing");
+    socket.off("stopTyping");
+
+    socket.on("typing", ({ senderId }) => {
+      if (senderId === selectedUser._id) {
+        set({ isTyping: true });
+      }
+    });
+
+    socket.on("stopTyping", ({ senderId }) => {
+      if (senderId === selectedUser._id) {
+        set({ isTyping: false });
+      }
+    });
+  },
+
+  unsubscribeFromTyping: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+
+    socket.off("typing");
+    socket.off("stopTyping");
+  },
+
+  setSelectedUser: (selectedUser) =>  set({
+      selectedUser,
+      isTyping: false, // ✅ reset typing when switching chat
+      messages: [],    // optional: clear old messages
+    }),
 }));
