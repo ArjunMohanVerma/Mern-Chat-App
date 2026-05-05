@@ -36,9 +36,9 @@ const App = () => {
     );
 
   return (
-    <div data-theme={theme}>
+    <div data-theme={theme} className="h-screen flex flex-col">
       <Navbar />
-
+      <div className="flex-1 overflow-auto">
       <Routes>
         <Route path="/" element={authUser ? authUser.isVerified ? <HomePage /> : <Navigate to="/verify-email" />: <Navigate to="/login" />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : !authUser.isVerified ? <Navigate to="/verify-email" />: <Navigate to="/" />} />
@@ -50,7 +50,7 @@ const App = () => {
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path='*' element={<Navigate to='/' replace />} />
       </Routes>
-
+      </div>
       <Toaster />
     </div>
   );

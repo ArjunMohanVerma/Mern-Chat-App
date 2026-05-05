@@ -30,26 +30,23 @@ const ChatContainer = () => {
     axiosInstance.put(`/messages/seen/${selectedUser._id}`);
 
     subscribeToMessages();
-
-    if (subscribeToTyping) subscribeToTyping();
+    subscribeToTyping?.();
 
     return () => {
       unsubscribeFromMessages();
-      if (unsubscribeFromTyping) unsubscribeFromTyping();
+      unsubscribeFromTyping?.();
     };
   }, [selectedUser]);
 
   useEffect(() => {
-    if (messageEndRef.current) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   if (!selectedUser) return null;
 
   if (isMessagesLoading) {
     return (
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full bg-base-100">
         <ChatHeader />
         <MessageSkeleton />
         <MessageInput />
@@ -58,7 +55,9 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    // ✅ IMPORTANT FIX
+    <div className="flex-1 flex flex-col h-full bg-base-100">
+
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

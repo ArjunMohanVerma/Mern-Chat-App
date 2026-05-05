@@ -1,5 +1,4 @@
 import { useChatStore } from "../store/useChatStore";
-
 import Sidebar from "../components/Sidebar";
 import NoChatSelected from "../components/NoChatSelected";
 import ChatContainer from "../components/ChatContainer";
@@ -8,24 +7,28 @@ const HomePage = () => {
   const { selectedUser } = useChatStore();
 
   return (
-    <div className="h-screen bg-base-200">
-      <div className="flex items-center justify-center pt-20 px-4 h-full">
-        <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-6xl h-full overflow-hidden">
+    // ✅ FIXED navbar overlap
+    <div className="h-full overflow:hidden bg-base-200">
+      <div className="h-full flex justify-center">
+        <div className="bg-base-100 w-full max-w-6xl h-full flex overflow-hidden rounded-lg">
 
-          {/* 📱 Mobile + Tablet (<1024px) */}
-          <div className="block lg:hidden h-full">
+          {/* ✅ Mobile + Tablet */}
+          <div className="block lg:hidden w-full h-full">
             {!selectedUser ? <Sidebar /> : <ChatContainer />}
           </div>
 
-          {/* 💻 Desktop (≥1024px) */}
-          <div className="hidden lg:flex h-full">
-            <div className="w-1/3 border-r">
+          {/* ✅ Desktop */}
+          <div className="hidden lg:flex w-full h-full">
+
+            {/* ❌ removed extra border here */}
+            <div className="w-1/3 h-full">
               <Sidebar />
             </div>
 
-            <div className="w-2/3">
+            <div className="w-2/3 h-full flex">
               {selectedUser ? <ChatContainer /> : <NoChatSelected />}
             </div>
+
           </div>
 
         </div>
