@@ -92,7 +92,7 @@
 // export default ChatContainer;
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef } from "react";
-
+import { axiosInstance } from "../lib/axios";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
@@ -119,6 +119,8 @@ const ChatContainer = () => {
     if (!selectedUser) return;
 
     getMessages(selectedUser._id);
+
+    axiosInstance.put(`/messages/seen/${selectedUser._id}`);
 
     subscribeToMessages();
     subscribeToTyping();
@@ -164,9 +166,7 @@ const ChatContainer = () => {
           <div
             key={message._id}
             className={`chat ${
-              message.senderId === authUser._id
-                ? "chat-end"
-                : "chat-start"
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
             }`}
             ref={messageEndRef}
           >
@@ -199,6 +199,14 @@ const ChatContainer = () => {
               )}
 
               {message.text && <p>{message.text}</p>}
+
+              {message.senderId === authUser._id && (
+                <span className="text-xs mt-1 text-right">
+                  {message.status === "sent" && "✓"}
+                  {message.status === "delivered" && "✓✓"}
+                  {message.status === "seen" && "✓✓"}
+                </span>
+              )}
             </div>
           </div>
         ))}
