@@ -67,7 +67,7 @@ export const useChatStore = create((set, get) => ({
   },
 
 
-    subscribeToTyping: () => {
+  subscribeToTyping: () => {
     const socket = useAuthStore.getState().socket;
     const { selectedUser } = get();
 
