@@ -98,6 +98,25 @@ export const useChatStore = create((set, get) => ({
     socket.off("stopTyping");
   },
 
+  subscribeToSeen: () => {
+  const socket = useAuthStore.getState().socket;
+
+  if (!socket) return;
+
+  socket.off("messagesSeen");
+
+  socket.on("messagesSeen", ({ senderId }) => {
+    const updatedMessages = get().messages.map((msg) =>
+      msg.senderId === get().authUser?._id
+        ? { ...msg, status: "seen" }
+        : msg
+    );
+
+    set({ messages: updatedMessages });
+  });
+},
+
+
   setSelectedUser: (selectedUser) =>  set({
       selectedUser,
       isTyping: false, // ✅ reset typing when switching chat
