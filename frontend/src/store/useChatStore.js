@@ -35,49 +35,52 @@ export const useChatStore = create((set, get) => ({
       set({ isMessagesLoading: false });
     }
   },
+
   sendMessage: async (messageData) => {
     const { selectedUser, messages } = get();
     try {
-      const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
+      const res = await axiosInstance.post(
+        `/messages/send/${selectedUser._id}`,
+        messageData,
+      );
       set({ messages: [...messages, res.data] });
     } catch (error) {
       toast.error(error.response.data.message);
     }
   },
 
-subscribeToMessages: () => {
-  const socket = useAuthStore.getState().socket;
-  if (!socket) return;
+  subscribeToMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
-  socket.off("newMessage");
+    socket.off("newMessage");
 
-  socket.on("newMessage", (newMessage) => {
-    const { selectedUser, messages } = get();
+    socket.on("newMessage", (newMessage) => {
+      const { selectedUser, messages } = get();
 
-    // ✅ If chat is open → show message
-    if (selectedUser && newMessage.senderId === selectedUser._id) {
-      set({
-        messages: [...messages, newMessage],
-      });
-    } 
-    // ✅ Otherwise → increase unread
-    else {
-      set((state) => ({
-        unreadCounts: {
-          ...state.unreadCounts,
-          [newMessage.senderId]:
-            (state.unreadCounts[newMessage.senderId] || 0) + 1,
-        },
-      }));
-    }
-  });
-},
+      // ✅ If chat is open → show message
+      if (selectedUser && newMessage.senderId === selectedUser._id) {
+        set({
+          messages: [...messages, newMessage],
+        });
+      }
+      // ✅ Otherwise → increase unread
+      else {
+        set((state) => ({
+          unreadCounts: {
+            ...state.unreadCounts,
+            [newMessage.senderId]:
+              (state.unreadCounts[newMessage.senderId] || 0) + 1,
+          },
+        }));
+      }
+    });
+  },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
   },
-
 
   subscribeToTyping: () => {
     const socket = useAuthStore.getState().socket;
@@ -110,37 +113,54 @@ subscribeToMessages: () => {
     socket.off("stopTyping");
   },
 
-  subscribeToSeen: () => {
+subscribeToSeen: () => {
   const socket = useAuthStore.getState().socket;
+  const authUser = useAuthStore.getState().authUser;
 
-  if (!socket) return;
+  if (!socket || !authUser) return;
 
   socket.off("messagesSeen");
 
   socket.on("messagesSeen", ({ senderId }) => {
-    const updatedMessages = get().messages.map((msg) =>
-      msg.senderId === get().authUser?._id
-        ? { ...msg, status: "seen" }
-        : msg
-    );
+    const updatedMessages = get().messages.map((msg) => {
+      // ✅ only update MY sent messages
+      if (
+        msg.senderId === authUser._id &&
+        msg.receiverId === senderId
+      ) {
+        return {
+          ...msg,
+          status: "seen",
+        };
+      }
+
+      return msg;
+    });
 
     set({ messages: updatedMessages });
   });
 },
+  unsubscribeFromSeen: () => {
+    const socket = useAuthStore.getState().socket;
 
+    if (!socket) return;
 
-setSelectedUser: (selectedUser) =>
-  set((state) => ({
-    selectedUser,
-    isTyping: false,
-    messages: [],
+    socket.off("messagesSeen");
+  },
 
-    // ✅ SAFE handling when null
-    unreadCounts: selectedUser
-      ? {
-          ...state.unreadCounts,
-          [selectedUser._id]: 0,
-        }
-      : state.unreadCounts,
-  })),
+  setSelectedUser: (selectedUser) =>
+    set((state) => ({
+      selectedUser,
+      isTyping: false,
+      messages: [],
+
+      // ✅ SAFE handling when null
+      unreadCounts: selectedUser
+        ? {
+            ...state.unreadCounts,
+            [selectedUser._id]: 0,
+          }
+        : state.unreadCounts,
+    })),
+
 }));
