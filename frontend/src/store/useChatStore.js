@@ -63,6 +63,7 @@ export const useChatStore = create((set, get) => ({
         set({
           messages: [...messages, newMessage],
         });
+        axiosInstance.put(`/messages/seen/${newMessage.senderId}`);
       }
       // ✅ Otherwise → increase unread
       else {
