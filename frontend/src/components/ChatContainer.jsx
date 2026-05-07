@@ -17,6 +17,8 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     subscribeToTyping,
     unsubscribeFromTyping,
+    subscribeToSeen,
+    unsubscribeFromSeen,
   } = useChatStore();
 
   const { authUser } = useAuthStore();
@@ -31,10 +33,12 @@ const ChatContainer = () => {
 
     subscribeToMessages();
     subscribeToTyping?.();
+    subscribeToSeen();
 
     return () => {
       unsubscribeFromMessages();
       unsubscribeFromTyping?.();
+      unsubscribeFromSeen();
     };
   }, [selectedUser]);
 
@@ -57,7 +61,6 @@ const ChatContainer = () => {
   return (
     // ✅ IMPORTANT FIX
     <div className="flex-1 flex flex-col h-full bg-base-100">
-
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -100,8 +103,12 @@ const ChatContainer = () => {
               {message.senderId === authUser._id && (
                 <span className="text-xs mt-1 text-right">
                   {message.status === "sent" && "✓"}
+
                   {message.status === "delivered" && "✓✓"}
-                  {message.status === "seen" && "✓✓"}
+
+                  {message.status === "seen" && (
+                    <span className="text-blue-500">✓✓</span>
+                  )}
                 </span>
               )}
             </div>
