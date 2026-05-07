@@ -10,6 +10,7 @@ export const useChatStore = create((set, get) => ({
   isUsersLoading: false,
   isMessagesLoading: false,
   isTyping: false,
+  unreadCounts: {}, // { userId: number }
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -44,22 +45,33 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
-    
-    const socket = useAuthStore.getState().socket;
-     socket.off("newMessage");//-----
+subscribeToMessages: () => {
+  const socket = useAuthStore.getState().socket;
+  if (!socket) return;
 
-    socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+  socket.off("newMessage");
 
+  socket.on("newMessage", (newMessage) => {
+    const { selectedUser, messages } = get();
+
+    // ✅ If chat is open → show message
+    if (selectedUser && newMessage.senderId === selectedUser._id) {
       set({
-        messages: [...get().messages, newMessage],
+        messages: [...messages, newMessage],
       });
-    });
-  },
+    } 
+    // ✅ Otherwise → increase unread
+    else {
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [newMessage.senderId]:
+            (state.unreadCounts[newMessage.senderId] || 0) + 1,
+        },
+      }));
+    }
+  });
+},
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
@@ -117,9 +129,18 @@ export const useChatStore = create((set, get) => ({
 },
 
 
-  setSelectedUser: (selectedUser) =>  set({
-      selectedUser,
-      isTyping: false, // ✅ reset typing when switching chat
-      messages: [],    // optional: clear old messages
-    }),
+setSelectedUser: (selectedUser) =>
+  set((state) => ({
+    selectedUser,
+    isTyping: false,
+    messages: [],
+
+    // ✅ SAFE handling when null
+    unreadCounts: selectedUser
+      ? {
+          ...state.unreadCounts,
+          [selectedUser._id]: 0,
+        }
+      : state.unreadCounts,
+  })),
 }));
