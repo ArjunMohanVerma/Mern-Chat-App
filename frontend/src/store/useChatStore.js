@@ -49,34 +49,66 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
-  subscribeToMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    if (!socket) return;
+subscribeToMessages: () => {
+  const socket = useAuthStore.getState().socket;
 
-    socket.off("newMessage");
+  if (!socket) return;
 
-    socket.on("newMessage", (newMessage) => {
-      const { selectedUser, messages } = get();
+  socket.off("newMessage");
 
-      // ✅ If chat is open → show message
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
-        set({
-          messages: [...messages, newMessage],
-        });
-        axiosInstance.put(`/messages/seen/${newMessage.senderId}`);
+  socket.on("newMessage", async (newMessage) => {
+    const { selectedUser, messages, users } = get();
+
+    const newMessageSenderId =
+      typeof newMessage.senderId === "object"
+        ? newMessage.senderId._id
+        : newMessage.senderId;
+
+    const selectedUserId = selectedUser?._id;
+
+    // ✅ UPDATE SIDEBAR LAST MESSAGE
+    const updatedUsers = users.map((user) => {
+      if (String(user._id) === String(newMessageSenderId)) {
+        return {
+          ...user,
+          lastMessage:
+            newMessage.text || "📷 Image",
+          lastMessageTime: newMessage.createdAt,
+        };
       }
-      // ✅ Otherwise → increase unread
-      else {
-        set((state) => ({
-          unreadCounts: {
-            ...state.unreadCounts,
-            [newMessage.senderId]:
-              (state.unreadCounts[newMessage.senderId] || 0) + 1,
-          },
-        }));
-      }
+
+      return user;
     });
-  },
+
+    // ✅ CHAT CURRENTLY OPEN
+    if (
+      selectedUser &&
+      String(newMessageSenderId) === String(selectedUserId)
+    ) {
+      await axiosInstance.put(
+        `/messages/seen/${selectedUserId}`
+      );
+
+      set({
+        users: updatedUsers,
+        messages: [...messages, newMessage],
+      });
+    }
+
+    // ✅ CHAT CLOSED → increase unread
+    else {
+      set((state) => ({
+        users: updatedUsers,
+
+        unreadCounts: {
+          ...state.unreadCounts,
+          [newMessageSenderId]:
+            (state.unreadCounts[newMessageSenderId] || 0) + 1,
+        },
+      }));
+    }
+  });
+},
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
