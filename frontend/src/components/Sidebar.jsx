@@ -20,7 +20,7 @@ const Sidebar = () => {
 
   useEffect(() => {
     getUsers();
-  }, [getUsers]);
+  }, []);
 
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
@@ -58,7 +58,8 @@ const Sidebar = () => {
       <div className="overflow-y-auto w-full py-3">
         {filteredUsers.map((user) => {
           const unread = unreadCounts[user._id] || 0;
-          const isSelected = selectedUser?._id === user._id;
+          // const isSelected = selectedUser?._id === user._id;
+          const isSelected = String(selectedUser?._id) === String(user._id);
 
           return (
             <button
@@ -85,7 +86,6 @@ const Sidebar = () => {
 
               {/* User Info */}
               <div className="flex flex-col text-left min-w-0 flex-1">
-                
                 {/* Top Row */}
                 <div className="flex items-center justify-between gap-2">
                   <div
@@ -124,9 +124,7 @@ const Sidebar = () => {
         })}
 
         {filteredUsers.length === 0 && (
-          <div className="text-center text-zinc-500 py-4">
-            No users found
-          </div>
+          <div className="text-center text-zinc-500 py-4">No users found</div>
         )}
       </div>
     </aside>
